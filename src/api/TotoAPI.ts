@@ -3,16 +3,11 @@ import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
 
-let endpointResolver: ((api: string) => string) | undefined;
-
 /**
- * Configure the TotoAPI endpoint resolver.
- * Must be called once during app initialization before using any TotoAPI-based clients.
- * @param resolver - Function that maps an API name to its base URL.
+ * A function that resolves an API name to its base URL.
+ * Each consuming app provides its own implementation.
  */
-export function configureTotoAPI(resolver: (api: string) => string): void {
-  endpointResolver = resolver;
-}
+export type EndpointResolver = (api: string) => string | undefined;
 
 export function cid() {
 
@@ -25,10 +20,17 @@ export function cid() {
 }
 
 /**
- * Wrapper for the fetch() React method that adds the required fields for Toto authentication
+ * Wrapper for the fetch() React method that adds the required fields for Toto authentication.
+ *
+ * Instantiate with a custom EndpointResolver so that each consuming app can provide its own
+ * endpoint map without coupling this package to any specific app's configuration.
+ *
+ * @param resolveEndpoint - Function that maps an API name to its base URL.
  * @param noHeaderOverride set to true to avoid that this method overrides some of the headers
  */
 export class TotoAPI {
+
+  constructor(private readonly resolveEndpoint: EndpointResolver) {}
 
   fetch(api: string, path: string, options?: any, noHeaderOverride: boolean = false) {
 
@@ -46,7 +48,7 @@ export class TotoAPI {
       options.headers['auth-provider'] = "toto";
     }
 
-    const baseUrl = endpointResolver ? endpointResolver(api) : `/${api}`;
+    const baseUrl = this.resolveEndpoint(api) ?? `/${api}`;
 
     return fetch(baseUrl + path, options);
   }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ChatInput from "./ChatInput";
+import { WhisperAPI } from "../api/WhisperAPI";
 
 /**
  * Props for the {@link ChatDock} component.
@@ -84,6 +85,12 @@ export interface ChatDockProps {
    * ```
    */
   onHeightChange: (height: number) => void;
+
+  /**
+   * Optional WhisperAPI instance for voice-to-text transcription in the chat input.
+   * If not provided, voice recording is disabled.
+   */
+  whisperAPI?: WhisperAPI;
 }
 
 interface SSEMessage {
@@ -142,7 +149,7 @@ interface SSEMessage {
  * }
  * ```
  */
-export function ChatDock({ sendMessage, streamConversationStatus, onHeightChange }: ChatDockProps) {
+export function ChatDock({ sendMessage, streamConversationStatus, onHeightChange, whisperAPI }: ChatDockProps) {
 
   const inputRef = useRef<HTMLDivElement>(null);
 
@@ -318,7 +325,7 @@ export function ChatDock({ sendMessage, streamConversationStatus, onHeightChange
           paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
         }}
       >
-        <ChatInput handlers={{ onSendMessage }} disabled={isWaiting || sseActive} />
+        <ChatInput handlers={{ onSendMessage }} disabled={isWaiting || sseActive} whisperAPI={whisperAPI} />
       </div>
     </div>
   );

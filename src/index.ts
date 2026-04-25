@@ -49,7 +49,8 @@ export { AudioProvider, useAudio } from './context/AudioContext';
 export { CarModeContextProvider, useCarMode } from './context/CarModeContext';
 
 // API clients
-export { TotoAPI, configureTotoAPI, cid } from './api/TotoAPI';
+export { TotoAPI, cid } from './api/TotoAPI';
+export type { EndpointResolver } from './api/TotoAPI';
 export { GaleBrokerAPI } from './api/GaleBrokerAPI';
 export { GoogleSTTAPI } from './api/GoogleSTTAPI';
 export { GoogleTTSAPI } from './api/GoogleTTSAPI';

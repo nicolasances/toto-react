@@ -6,6 +6,7 @@ import { MediaRecorderEvent, useVoiceRecording } from "../hooks/useVoiceRecordin
 import { WhisperAPI } from "../api/WhisperAPI";
 import { AudioVisualizer } from "./AudioVisualizer";
 
+
 type VoiceRecordingState = 'idle' | 'recordingRequested' | 'recordingStarted' | 'stoppingRecording' | 'transcribing';
 
 export interface ChatInputHandlers {
@@ -15,9 +16,10 @@ export interface ChatInputHandlers {
 interface ChatInputProps {
   handlers: ChatInputHandlers;
   disabled?: boolean;
+  whisperAPI?: WhisperAPI;
 }
 
-export default function ChatInput({ handlers, disabled = false }: ChatInputProps) {
+export default function ChatInput({ handlers, disabled = false, whisperAPI }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -28,9 +30,10 @@ export default function ChatInput({ handlers, disabled = false }: ChatInputProps
   const minTextAreaHeight = 32;
 
   const onRecordingComplete = useCallback(async (audioBlob: Blob) => {
+    if (!whisperAPI) return;
     setVoiceState('transcribing');
     try {
-      const result = await new WhisperAPI().transcribeAudio(audioBlob, 'toto');
+      const result = await whisperAPI.transcribeAudio(audioBlob, 'toto');
       if (result.text) {
         setMessage(result.text);
       }
@@ -39,7 +42,7 @@ export default function ChatInput({ handlers, disabled = false }: ChatInputProps
     } finally {
       setVoiceState('idle');
     }
-  }, []);
+  }, [whisperAPI]);
 
   const onRecordingEvent = useCallback((event: MediaRecorderEvent) => {
     if (event === 'recordingStarted') setVoiceState('recordingStarted');
@@ -126,7 +129,7 @@ export default function ChatInput({ handlers, disabled = false }: ChatInputProps
           <AudioVisualizer stream={stream} isRecording={isRecordingActive} height={32} />
         </div>
         <div className="flex justify-end fill-cyan-800 gap-2">
-          {!message && !isSending && !disabled && !isRecordingActive && (
+          {!message && !isSending && !disabled && !isRecordingActive && whisperAPI && (
             <RoundButton
               svgIconPath={{ src: "/images/microphone.svg", alt: "Talk" }}
               onClick={() => void toggleRecording()}

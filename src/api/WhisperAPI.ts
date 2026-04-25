@@ -4,6 +4,9 @@ import { TotoAPI } from "./TotoAPI";
  * API to transcribe audio using OpenAI's Whisper model
  */
 export class WhisperAPI {
+
+  constructor(private readonly totoAPI: TotoAPI) {}
+
   /**
    * Transcribe audio blob to text using OpenAI Whisper model.
    *
@@ -57,7 +60,7 @@ export class WhisperAPI {
       if (mode == "async") {
 
         // Run as a job
-        const response = (await new TotoAPI().fetch('whispering', '/transcribejob', {
+        const response = (await this.totoAPI.fetch('whispering', '/transcribejob', {
           method: 'POST',
           headers: {
             "Accept": "application/json"
@@ -70,7 +73,7 @@ export class WhisperAPI {
       else {
 
         // Run synchronously - ok for small audio files
-        const response = (await new TotoAPI().fetch('whispering', '/transcribe', {
+        const response = (await this.totoAPI.fetch('whispering', '/transcribe', {
           method: 'POST',
           headers: {
             "Accept": "application/json"
@@ -95,7 +98,7 @@ export class WhisperAPI {
    */
   async getTranscriptionJobStatus(jobId: string): Promise<WhisperStatusResponse> {
 
-    return (await new TotoAPI().fetch('whispering', `/transcriptions/${jobId}`)).json();
+    return (await this.totoAPI.fetch('whispering', `/transcriptions/${jobId}`)).json();
   }
 }
 
