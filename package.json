@@ -15,6 +15,16 @@
       "types": "./dist/server.d.ts",
       "import": "./dist/server.mjs",
       "require": "./dist/server.js"
+    },
+    "./server/stt": {
+      "types": "./dist/server/stt/route.d.ts",
+      "import": "./dist/server/stt/route.mjs",
+      "require": "./dist/server/stt/route.js"
+    },
+    "./server/tts/synthesize": {
+      "types": "./dist/server/tts/synthesize/route.d.ts",
+      "import": "./dist/server/tts/synthesize/route.mjs",
+      "require": "./dist/server/tts/synthesize/route.js"
     }
   },
   "files": [
@@ -26,13 +36,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@google-cloud/speech": "^7.3.0",
+    "@google-cloud/text-to-speech": "^6.4.0",
     "moment": "^2.30.1",
     "universal-cookie": "^7.2.2"
   },
   "peerDependencies": {
+    "next": ">=14",
     "react": ">=18",
-    "react-dom": ">=18",
-    "next": ">=14"
+    "react-dom": ">=18"
   },
   "overrides": {
     "postcss": "^8.5.10"
