@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { MediaRecorderEvent, useVoiceRecording } from './useVoiceRecording';
 import { useAudio } from '../context/AudioContext';
 import { GoogleSTTAPI } from '../api/GoogleSTTAPI';
@@ -15,6 +15,9 @@ export type AgentVoiceState =
 
 export interface UseAgentVoiceInteractionOptions {
     sendMessage: (text: string) => Promise<string>;
+    galeBrokerAPI: GaleBrokerAPI;
+    sttAPI?: GoogleSTTAPI;
+    ttsAPI?: GoogleTTSAPI;
 }
 
 export interface UseAgentVoiceInteractionResult {
@@ -26,25 +29,31 @@ export interface UseAgentVoiceInteractionResult {
 
 export function useAgentVoiceInteraction({
     sendMessage,
+    galeBrokerAPI,
+    sttAPI,
+    ttsAPI,
 }: UseAgentVoiceInteractionOptions): UseAgentVoiceInteractionResult {
 
     const { play, stop, unlock } = useAudio();
     const [state, setState] = useState<AgentVoiceState>('idle');
     const [messages, setMessages] = useState<string[]>([]);
 
+    const resolvedSttAPI = useMemo(() => sttAPI ?? new GoogleSTTAPI(), [sttAPI]);
+    const resolvedTtsAPI = useMemo(() => ttsAPI ?? new GoogleTTSAPI(), [ttsAPI]);
+
     const speakMessage = useCallback(async (text: string) => {
         try {
-            const url = await new GoogleTTSAPI().synthesizeSpeech(text);
+            const url = await resolvedTtsAPI.synthesizeSpeech(text);
             await play(url);
         } catch (err) {
             console.error('TTS error:', err);
         }
-    }, [play]);
+    }, [play, resolvedTtsAPI]);
 
     const onRecordingComplete = useCallback(async (audioBlob: Blob) => {
         setState('transcribing');
         try {
-            const result = await new GoogleSTTAPI().transcribeAudio(audioBlob);
+            const result = await resolvedSttAPI.transcribeAudio(audioBlob);
 
             if (!result.text) {
                 setState('idle');
@@ -54,7 +63,7 @@ export function useAgentVoiceInteraction({
             setState('agentProcessing');
 
             const conversationId = await sendMessage(result.text);
-            const response = await new GaleBrokerAPI().streamConversationStatus(conversationId);
+            const response = await galeBrokerAPI.streamConversationStatus(conversationId);
             const reader = response.body?.getReader();
 
             if (!reader) {
@@ -95,7 +104,7 @@ export function useAgentVoiceInteraction({
             console.error('Agent interaction error:', err);
             setState('idle');
         }
-    }, [sendMessage, speakMessage]);
+    }, [sendMessage, speakMessage, galeBrokerAPI, resolvedSttAPI]);
 
     const onRecordingEvent = useCallback((event: MediaRecorderEvent) => {
         if (event === 'recordingStarted') setState('recordingStarted');
