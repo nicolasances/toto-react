@@ -23,9 +23,15 @@ such restriction, so local mode forces webpack via the `--webpack` flag.
 
 Assumes `toto-react` is checked out at `../toto-react` (sibling of this project).
 
+> **Next.js version note:** Steps 1 and 2 differ slightly depending on your Next.js version.
+> - **Next.js ≥ 16**: Turbopack is the default, so you must pass `--webpack` to opt back to webpack.
+> - **Next.js < 16**: Webpack is still the default — no flag is needed and the `--webpack` flag does not exist. Omit it and skip the `turbopack: {}` config block.
+
 ### 1. Update `package.json`
 
-Change the `toto-react` dependency and scripts:
+Change the `toto-react` dependency and scripts.
+
+**Next.js ≥ 16:**
 
 ```json
 "scripts": {
@@ -40,15 +46,46 @@ Change the `toto-react` dependency and scripts:
 }
 ```
 
+**Next.js < 16** (webpack is the default — no flag required):
+
+```json
+"scripts": {
+  "dev":       "next dev",
+  "dev:turbo": "next dev --turbopack",
+  "build":     "next build",
+  "start":     "next start",
+  "lint":      "next lint"
+},
+"dependencies": {
+  "toto-react": "file:../toto-react"
+}
+```
+
 ### 2. Update `next.config.ts`
 
-Add the `turbopack: {}` block (silences the "webpack config without turbopack config"
-warning that Next.js 16 emits) and the webpack alias:
+Add the webpack alias and, **for Next.js ≥ 16 only**, the `turbopack: {}` block (silences
+the "webpack config without turbopack config" warning that Next.js 16 emits).
+
+**Next.js ≥ 16:**
 
 ```ts
 const nextConfig: NextConfig = {
   transpilePackages: ['toto-react'],
   turbopack: {},
+  webpack: (config) => {
+    const path = require("path");
+    config.resolve.alias['toto-react$'] = path.resolve(__dirname, '../toto-react/src/index.ts');
+    return config;
+  },
+  // ... rest of config
+};
+```
+
+**Next.js < 16** (omit `turbopack: {}`):
+
+```ts
+const nextConfig: NextConfig = {
+  transpilePackages: ['toto-react'],
   webpack: (config) => {
     const path = require("path");
     config.resolve.alias['toto-react$'] = path.resolve(__dirname, '../toto-react/src/index.ts');
@@ -198,15 +235,15 @@ npm run dev      # next dev --turbopack
 
 ## Quick-reference summary
 
-| Setting | npm mode | local mode |
-|---|---|---|
-| `package.json` dependency | `"toto-react": "^0.1.0"` | `"toto-react": "file:../toto-react"` |
-| `dev` script | `next dev --turbopack` | `next dev --webpack` |
-| `build` script | `next build` | `next build --webpack` |
-| `next.config.ts` transpilePackages | not needed | `transpilePackages: ['toto-react']` |
-| `next.config.ts` webpack alias | not needed | `toto-react$` → `../toto-react/src/index.ts` |
-| `next.config.ts` turbopack block | not needed | `turbopack: {}` |
-| `tailwind.config.ts` content | `node_modules/toto-react/dist/**/*.{js,mjs}` | `../toto-react/src/**` |
-| `tsconfig.json` paths | no toto-react entry | `"toto-react": ["../toto-react/src/index.ts"]` |
-| toto-react node_modules symlinks | not needed | `next`, `react`, `react-dom`, `@types/react`, `@types/react-dom` |
-| Before switching | `rm -rf node_modules/toto-react && rm -rf .next` | (symlink is created by npm) |
+| Setting | npm mode | local mode (Next.js ≥ 16) | local mode (Next.js < 16) |
+|---|---|---|---|
+| `package.json` dependency | `"toto-react": "^0.1.0"` | `"toto-react": "file:../toto-react"` | `"toto-react": "file:../toto-react"` |
+| `dev` script | `next dev --turbopack` | `next dev --webpack` | `next dev` |
+| `build` script | `next build` | `next build --webpack` | `next build` |
+| `next.config.ts` transpilePackages | not needed | `transpilePackages: ['toto-react']` | `transpilePackages: ['toto-react']` |
+| `next.config.ts` webpack alias | not needed | `toto-react$` → `../toto-react/src/index.ts` | `toto-react$` → `../toto-react/src/index.ts` |
+| `next.config.ts` turbopack block | not needed | `turbopack: {}` | not needed (flag doesn't exist in v15) |
+| `tailwind.config.ts` content | `node_modules/toto-react/dist/**/*.{js,mjs}` | `../toto-react/src/**` | `../toto-react/src/**` |
+| `tsconfig.json` paths | no toto-react entry | `"toto-react": ["../toto-react/src/index.ts"]` | `"toto-react": ["../toto-react/src/index.ts"]` |
+| toto-react node_modules symlinks | not needed | `next`, `react`, `react-dom`, `@types/react`, `@types/react-dom` | `next`, `react`, `react-dom`, `@types/react`, `@types/react-dom` |
+| Before switching | `rm -rf node_modules/toto-react && rm -rf .next` | (symlink is created by npm) | (symlink is created by npm) |
