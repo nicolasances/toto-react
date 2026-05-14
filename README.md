@@ -16,6 +16,21 @@ npm install toto-react
 import { /* components, hooks, contexts */ } from 'toto-react';
 ```
 
+## Components
+
+| Component | How-to |
+| --- | --- |
+| `AgentConversationView` | [How to use AgentConversationView](docs/how-to/components/agent-conversation-view.md) |
+| `AudioVisualizer` | [How to use AudioVisualizer](docs/how-to/components/audio-visualizer.md) |
+| `ChatDock` | [How to use ChatDock](docs/how-to/components/chat-dock.md) |
+| `ChatInput` | [How to use ChatInput](docs/how-to/components/chat-input.md) |
+| `MaskedSvgIcon` | [How to use MaskedSvgIcon](docs/how-to/components/masked-svg-icon.md) |
+| `RoundButton` | [How to use RoundButton](docs/how-to/components/round-button.md) |
+| `SideMenu` | [How to use SideMenu](docs/how-to/components/side-menu.md) |
+| `ToggleableMenuItem` | [How to use ToggleableMenuItem](docs/how-to/components/toggleable-menu-item.md) |
+| `TotoList` | [How to use TotoList](docs/how-to/components/toto-list.md) |
+| `VoiceAgentDock` | [How to use VoiceAgentDock](docs/how-to/components/voice-agent-dock.md) |
+
 ### Server-side Next.js API route handlers
 
 Re-export the handlers inside your own `app/api/` routes:
