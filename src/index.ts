@@ -19,6 +19,9 @@ export type { ChatInputHandlers } from './components/ChatInput';
 
 export { MaskedSvgIcon } from './components/MaskedSvgIcon';
 
+export { TotoList } from './components/TotoList';
+export type { TotoListItem, TotoListProps } from './components/TotoList';
+
 export { VoiceAgentDock } from './components/VoiceAgentDock';
 export type { VoiceAgentDockProps } from './components/VoiceAgentDock';
 
